@@ -12,21 +12,20 @@ type PostCardProps = {
 export function PostCard({ post }: PostCardProps) {
   const { toast } = useToast();
 
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(post);
+  const handleCopy = () => {
+    navigator.clipboard.writeText(post).then(() => {
       toast({
         title: "Copied to clipboard!",
         description: "You can now paste the post on LinkedIn.",
       });
-    } catch (err) {
+    }).catch(err => {
       toast({
         variant: "destructive",
         title: "Failed to copy",
         description: "Could not copy text to clipboard.",
       });
       console.error("Failed to copy text: ", err);
-    }
+    });
   };
 
   return (
