@@ -13,19 +13,39 @@ export function PostCard({ post }: PostCardProps) {
   const { toast } = useToast();
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(post).then(() => {
-      toast({
-        title: "Copied to clipboard!",
-        description: "You can now paste the post on LinkedIn.",
-      });
-    }).catch(err => {
+    // This fallback method works in environments where navigator.clipboard is blocked.
+    const textArea = document.createElement("textarea");
+    textArea.value = post;
+    
+    // Avoid scrolling to bottom
+    textArea.style.top = "0";
+    textArea.style.left = "0";
+    textArea.style.position = "fixed";
+
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+
+    try {
+      const successful = document.execCommand("copy");
+      if (successful) {
+        toast({
+          title: "Copied to clipboard!",
+          description: "You can now paste the post on LinkedIn.",
+        });
+      } else {
+        throw new Error("Copy command was not successful.");
+      }
+    } catch (err) {
       toast({
         variant: "destructive",
         title: "Failed to copy",
         description: "Could not copy text to clipboard.",
       });
-      console.error("Failed to copy text: ", err);
-    });
+      console.error("Fallback: Oops, unable to copy", err);
+    }
+
+    document.body.removeChild(textArea);
   };
 
   return (
