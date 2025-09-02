@@ -20,10 +20,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
 import { Loader2 } from "lucide-react";
 import type { GenerateLinkedInPostsInput } from "@/ai/flows/generate-linkedin-posts";
-import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
   topic: z.string().min(1, { message: "Topic is required." }),
@@ -39,20 +38,9 @@ type PostGeneratorFormProps = {
   isLoading: boolean;
 };
 
-const lengthMap: Record<number, "Short" | "Medium" | "Long"> = {
-  0: "Short",
-  1: "Medium",
-  2: "Long",
-};
-const reverseLengthMap: Record<"Short" | "Medium" | "Long", number> = {
-  Short: 0,
-  Medium: 1,
-  Long: 2,
-};
+const postLengthOptions: ("Short" | "Medium" | "Long")[] = ["Short", "Medium", "Long"];
 
 export function PostGeneratorForm({ onSubmit, isLoading }: PostGeneratorFormProps) {
-  const [sliderValue, setSliderValue] = useState(reverseLengthMap["Medium"]);
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -138,19 +126,24 @@ export function PostGeneratorForm({ onSubmit, isLoading }: PostGeneratorFormProp
           name="postLength"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Post Length: {lengthMap[sliderValue]}</FormLabel>
+              <FormLabel>Post Length</FormLabel>
               <FormControl>
-                <Slider
-                  defaultValue={[reverseLengthMap[field.value || "Medium"]]}
-                  min={0}
-                  max={2}
-                  step={1}
-                  onValueChange={(value) => {
-                    const mappedValue = lengthMap[value[0]];
-                    field.onChange(mappedValue);
-                    setSliderValue(value[0]);
-                  }}
-                />
+                <div className="grid grid-cols-3 gap-2">
+                  {postLengthOptions.map((length) => (
+                    <Button
+                      key={length}
+                      type="button"
+                      variant="outline"
+                      className={cn(
+                        "font-normal",
+                        field.value === length && "bg-accent text-accent-foreground"
+                      )}
+                      onClick={() => field.onChange(length)}
+                    >
+                      {length}
+                    </Button>
+                  ))}
+                </div>
               </FormControl>
             </FormItem>
           )}
